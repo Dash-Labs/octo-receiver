@@ -1,0 +1,14 @@
+*.iml
+*.ipr
+*.iws
+.idea/
+target/
+*~
+.DS_Store/
+.DS_Store
+gen/
+out/
+server/nginx.pid
+server/nginx.bak.conf
+tmp/
+.sass-cache/
