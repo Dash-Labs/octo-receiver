@@ -1,6 +1,7 @@
 package com.dashlabs.octoreceiver;
 
 import com.dashlabs.octoreceiver.config.OctoReceiverConfiguration;
+import com.dashlabs.octoreceiver.health.OctoReceiverHealthCheck;
 import com.dashlabs.octoreceiver.resources.OctoReceiverResource;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -23,9 +24,13 @@ public class OctoReceiverService extends Service<OctoReceiverConfiguration> {
 
     @Override public void run(OctoReceiverConfiguration configuration, Environment environment) throws Exception {
 
-        OctoReceiverResource octoReceiverResource = new OctoReceiverResource(configuration.getScript());
+        OctoReceiverResource octoReceiverResource = new OctoReceiverResource(environment.getObjectMapperFactory().build(),
+                configuration.getScript(), configuration.getRepositoryMapping(), configuration.getRepositoryDependencyMapping());
 
         environment.addResource(octoReceiverResource);
+
+        OctoReceiverHealthCheck check = new OctoReceiverHealthCheck(octoReceiverResource);
+        environment.addHealthCheck(check);
 
     }
 }

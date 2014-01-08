@@ -1,5 +1,9 @@
 script: src/main/resources/echo.sh
 
+repositoryMapping:
+
+repositoryDependencyMapping:
+
 logging:
     level: INFO
     loggers:

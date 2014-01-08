@@ -4,6 +4,7 @@ import com.yammer.dropwizard.config.Configuration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * User: blangel
@@ -16,15 +17,33 @@ public class OctoReceiverConfiguration extends Configuration {
     @NotNull
     private final String script;
 
+    @Valid
+    @NotNull
+    private final Map<String, String> repositoryMapping;
+
+    @Valid
+    @NotNull
+    private final Map<String, String> repositoryDependencyMapping;
+
     private OctoReceiverConfiguration() {
-        this(null);
+        this(null, null, null);
     }
 
-    public OctoReceiverConfiguration(String script) {
+    public OctoReceiverConfiguration(String script, Map<String, String> repositoryMapping, Map<String, String> repositoryDependencyMapping) {
         this.script = script;
+        this.repositoryMapping = repositoryMapping;
+        this.repositoryDependencyMapping = repositoryDependencyMapping;
     }
 
     public String getScript() {
         return script;
+    }
+
+    public Map<String, String> getRepositoryMapping() {
+        return repositoryMapping;
+    }
+
+    public Map<String, String> getRepositoryDependencyMapping() {
+        return repositoryDependencyMapping;
     }
 }
