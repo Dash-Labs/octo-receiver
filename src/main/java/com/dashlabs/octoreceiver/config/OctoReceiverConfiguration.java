@@ -25,14 +25,36 @@ public class OctoReceiverConfiguration extends Configuration {
     @NotNull
     private final Map<String, String> repositoryDependencyMapping;
 
+    @Valid
+    @NotNull
+    private final EmailConfiguration emailConfiguration;
+
+    @Valid
+    @NotNull
+    private final String failureSubjectPrefix;
+
+    @Valid
+    @NotNull
+    private final String failureBodyPrefix;
+
+    @Valid
+    @NotNull
+    private final String failureEmail;
+
     private OctoReceiverConfiguration() {
-        this(null, null, null);
+        this(null, null, null, null, null, null, null);
     }
 
-    public OctoReceiverConfiguration(String script, Map<String, String> repositoryMapping, Map<String, String> repositoryDependencyMapping) {
+    public OctoReceiverConfiguration(String script, Map<String, String> repositoryMapping, Map<String, String> repositoryDependencyMapping,
+                                     EmailConfiguration emailConfiguration, String failureSubjectPrefix, String failureBodyPrefix,
+                                     String failureEmail) {
         this.script = script;
         this.repositoryMapping = repositoryMapping;
         this.repositoryDependencyMapping = repositoryDependencyMapping;
+        this.emailConfiguration = emailConfiguration;
+        this.failureSubjectPrefix = failureSubjectPrefix;
+        this.failureBodyPrefix = failureBodyPrefix;
+        this.failureEmail = failureEmail;
     }
 
     public String getScript() {
@@ -45,5 +67,21 @@ public class OctoReceiverConfiguration extends Configuration {
 
     public Map<String, String> getRepositoryDependencyMapping() {
         return repositoryDependencyMapping;
+    }
+
+    public EmailConfiguration getEmailConfiguration() {
+        return emailConfiguration;
+    }
+
+    public String getFailureSubjectPrefix() {
+        return failureSubjectPrefix;
+    }
+
+    public String getFailureBodyPrefix() {
+        return failureBodyPrefix;
+    }
+
+    public String getFailureEmail() {
+        return failureEmail;
     }
 }

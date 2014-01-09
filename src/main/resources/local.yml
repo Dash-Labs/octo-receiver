@@ -4,6 +4,18 @@ repositoryMapping:
 
 repositoryDependencyMapping:
 
+emailConfiguration:
+    user:
+    password:
+    smtpHost:
+    smtpPort:
+
+failureSubjectPrefix:
+
+failureBodyPrefix:
+
+failureEmail:
+
 logging:
     level: INFO
     loggers:

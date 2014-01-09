@@ -1,5 +1,6 @@
 package com.dashlabs.octoreceiver.resources;
 
+import com.dashlabs.octoreceiver.OctoReceiverEmailer;
 import com.dashlabs.octoreceiver.model.GitHubWebHookPayload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -40,12 +41,25 @@ public class OctoReceiverResource {
 
     private final Map<String, String> repositoryDependencyMapping;
 
+    private final OctoReceiverEmailer emailer;
+
+    private final String failureSubjectPrefix;
+
+    private final String failureBodyPrefix;
+
+    private final String failureEmail;
+
     public OctoReceiverResource(ObjectMapper mapper, String script, Map<String, String> repositoryMapping,
-                                Map<String, String> repositoryDependencyMapping) {
+                                Map<String, String> repositoryDependencyMapping, OctoReceiverEmailer emailer,
+                                String failureSubjectPrefix, String failureBodyPrefix, String failureEmail) {
         this.mapper = mapper;
         this.script = script;
         this.repositoryMapping = repositoryMapping;
         this.repositoryDependencyMapping = repositoryDependencyMapping;
+        this.emailer = emailer;
+        this.failureSubjectPrefix = failureSubjectPrefix;
+        this.failureBodyPrefix = failureBodyPrefix;
+        this.failureEmail = failureEmail;
     }
 
     @POST
@@ -76,11 +90,7 @@ public class OctoReceiverResource {
         int result = waitFor(prefix, reader, process);
         if (result != 0) {
             LOG.error("{} {} - failed with result code [ {} ]", prefix, script, result);
-            if (tag.isPresent()) {
-                // TODO - send email
-            } else {
-                // TODO - send email
-            }
+            emailer.sendMessage(failureSubjectPrefix, failureBodyPrefix, gitHubPayload, failureEmail);
         }
     }
 
