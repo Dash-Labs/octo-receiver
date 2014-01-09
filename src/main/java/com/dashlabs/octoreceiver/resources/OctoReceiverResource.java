@@ -27,6 +27,18 @@ import java.util.regex.Pattern;
 @Path("/")
 public class OctoReceiverResource {
 
+    private static class ProcessResult {
+
+        private final StringBuilder logs;
+
+        private final int result;
+
+        private ProcessResult(StringBuilder logs, int result) {
+            this.logs = logs;
+            this.result = result;
+        }
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(OctoReceiverResource.class);
 
     private static final Pattern GIT_REF_BRANCH_REGEX = Pattern.compile("refs/heads/(.*)");
@@ -87,20 +99,24 @@ public class OctoReceiverResource {
                 headCommitMessage, author).redirectErrorStream(true);
         Process process = processBuilder.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        int result = waitFor(prefix, reader, process);
-        if (result != 0) {
+        ProcessResult result = waitFor(prefix, reader, process);
+        if (result.result != 0) {
             LOG.error("{} {} - failed with result code [ {} ]", prefix, script, result);
-            emailer.sendMessage(failureSubjectPrefix, failureBodyPrefix, gitHubPayload, failureEmail);
+            String htmlLogs = result.logs.toString().replaceAll("\n", "<br/>");
+            emailer.sendMessage(failureSubjectPrefix, failureBodyPrefix, htmlLogs, gitHubPayload, failureEmail);
         }
     }
 
-    private int waitFor(String prefix, BufferedReader reader, Process process) throws IOException, InterruptedException {
+    private ProcessResult waitFor(String prefix, BufferedReader reader, Process process) throws IOException, InterruptedException {
+        StringBuilder processOutput = new StringBuilder();
         // take the child's input and reformat for output on parent process
         String processStdoutLine;
         while ((processStdoutLine = reader.readLine()) != null) {
+            processOutput.append(processStdoutLine);
+            processOutput.append('\n');
             LOG.info("{} - {}", prefix, processStdoutLine);
         }
-        return process.waitFor();
+        return new ProcessResult(processOutput, process.waitFor());
     }
 
     private Optional<String> getBranch(String ref) {

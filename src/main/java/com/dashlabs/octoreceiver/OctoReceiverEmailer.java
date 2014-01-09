@@ -33,7 +33,7 @@ public class OctoReceiverEmailer {
         this.smtpPort = smtpPort;
     }
 
-    public boolean sendMessage(String subjectPrefix, String bodyPrefix, GitHubWebHookPayload payload, String ... addresses) {
+    public boolean sendMessage(String subjectPrefix, String bodyPrefix, String logs, GitHubWebHookPayload payload, String ... addresses) {
         if ((addresses == null) || (addresses.length < 1)) {
             return false;
         }
@@ -50,8 +50,8 @@ public class OctoReceiverEmailer {
             Address[] parsed = InternetAddress.parse(csv(addresses));
             message.setRecipients(Message.RecipientType.TO, parsed);
             message.setSubject(String.format("%s %s", subjectPrefix, repositoryName));
-            String content = String.format("%s <a href=\"%s\">%s</a> after commit <a href=\"%s\">%s</a> by %s", bodyPrefix, repositoryUrl,
-                    repositoryName, commitUrl, commitId, author);
+            String content = String.format("%s <a href=\"%s\">%s</a> after commit <a href=\"%s\">%s</a> by %s<br/><br/>%s", bodyPrefix, repositoryUrl,
+                    repositoryName, commitUrl, commitId, author, logs);
             message.setContent(content, "text/html; charset=utf-8");
             Transport.send(message);
         } catch (MessagingException me) {
