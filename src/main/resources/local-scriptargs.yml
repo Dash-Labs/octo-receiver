@@ -1,6 +1,6 @@
-script: src/main/resources/echo.sh
+script: curl -X POST http://localhost:8082/tasks/gc
 
-onlyUseScriptArgs: false
+onlyUseScriptArgs: true
 
 emailConfiguration:
     user: hedgie@dash.by
@@ -8,9 +8,9 @@ emailConfiguration:
     smtpHost: smtp.gmail.com
     smtpPort: 465
 
-failureSubjectPrefix: FAILURE echoing
+failureSubjectPrefix: FAILURE invoking the gc task
 
-failureBodyPrefix: Could not echo
+failureBodyPrefix: Could not invoke the GC task
 
 failureEmail: commiters@dash.by
 

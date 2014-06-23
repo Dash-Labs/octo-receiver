@@ -29,7 +29,7 @@ public class OctoReceiverService extends Service<OctoReceiverConfiguration> {
         OctoReceiverEmailer emailer = new OctoReceiverEmailer(emailConfig.getUser(), emailConfig.getPassword(), emailConfig.getSmtpHost(), emailConfig.getSmtpPort());
 
         OctoReceiverResource octoReceiverResource = new OctoReceiverResource(environment.getObjectMapperFactory().build(),
-                configuration.getScript(), configuration.getRepositoryMapping(), configuration.getRepositoryDependencyMapping(),
+                configuration.getScript(), configuration.getOnlyUseScriptArgs(), configuration.getRepositoryMapping(), configuration.getRepositoryDependencyMapping(),
                 emailer, configuration.getFailureSubjectPrefix(), configuration.getFailureBodyPrefix(), configuration.getFailureEmail());
 
         environment.addResource(octoReceiverResource);

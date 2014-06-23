@@ -19,10 +19,10 @@ public class OctoReceiverConfiguration extends Configuration {
 
     @Valid
     @NotNull
+    private final Boolean onlyUseScriptArgs;
+
     private final Map<String, String> repositoryMapping;
 
-    @Valid
-    @NotNull
     private final Map<String, String> repositoryDependencyMapping;
 
     @Valid
@@ -42,13 +42,14 @@ public class OctoReceiverConfiguration extends Configuration {
     private final String failureEmail;
 
     private OctoReceiverConfiguration() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
-    public OctoReceiverConfiguration(String script, Map<String, String> repositoryMapping, Map<String, String> repositoryDependencyMapping,
+    public OctoReceiverConfiguration(String script, Boolean onlyUseScriptArgs, Map<String, String> repositoryMapping, Map<String, String> repositoryDependencyMapping,
                                      EmailConfiguration emailConfiguration, String failureSubjectPrefix, String failureBodyPrefix,
                                      String failureEmail) {
         this.script = script;
+        this.onlyUseScriptArgs = onlyUseScriptArgs;
         this.repositoryMapping = repositoryMapping;
         this.repositoryDependencyMapping = repositoryDependencyMapping;
         this.emailConfiguration = emailConfiguration;
@@ -59,6 +60,10 @@ public class OctoReceiverConfiguration extends Configuration {
 
     public String getScript() {
         return script;
+    }
+
+    public Boolean getOnlyUseScriptArgs() {
+        return onlyUseScriptArgs;
     }
 
     public Map<String, String> getRepositoryMapping() {

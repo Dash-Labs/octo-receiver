@@ -15,6 +15,8 @@ import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +51,10 @@ public class OctoReceiverResource {
 
     private final String script;
 
+    private final boolean onlyUseScriptArgs;
+
+    private final String[] supplementalArgs;
+
     private final Map<String, String> repositoryMapping;
 
     private final Map<String, String> repositoryDependencyMapping;
@@ -61,13 +67,15 @@ public class OctoReceiverResource {
 
     private final String failureEmail;
 
-    public OctoReceiverResource(ObjectMapper mapper, String script, Map<String, String> repositoryMapping,
+    public OctoReceiverResource(ObjectMapper mapper, String script, Boolean onlyUseScriptArgs, Map<String, String> repositoryMapping,
                                 Map<String, String> repositoryDependencyMapping, OctoReceiverEmailer emailer,
                                 String failureSubjectPrefix, String failureBodyPrefix, String failureEmail) {
         this.mapper = mapper;
-        this.script = script;
-        this.repositoryMapping = repositoryMapping;
-        this.repositoryDependencyMapping = repositoryDependencyMapping;
+        this.script = getScript(script);
+        this.onlyUseScriptArgs = (onlyUseScriptArgs == null ? false : onlyUseScriptArgs);
+        this.supplementalArgs = getSupplementalArgs(script);
+        this.repositoryMapping = (repositoryMapping == null ? Collections.<String, String>emptyMap() : repositoryMapping);
+        this.repositoryDependencyMapping = (repositoryDependencyMapping == null ? Collections.<String, String>emptyMap() : repositoryDependencyMapping);
         this.emailer = emailer;
         this.failureSubjectPrefix = failureSubjectPrefix;
         this.failureBodyPrefix = failureBodyPrefix;
@@ -95,8 +103,8 @@ public class OctoReceiverResource {
         String author = String.format("%s <%s>", gitHubPayload.getPusher().getName(), gitHubPayload.getPusher().getEmail());
         // invoke the script with the arguments
         String prefix = String.format("%s%s@%s", branch.or(""), tag.or(""), repositoryName);
-        ProcessBuilder processBuilder = new ProcessBuilder(script, repoPath.or(""), repoDepPath.or(""), branch.or(""), tag.or(""),
-                headCommitMessage, author).redirectErrorStream(true);
+        ProcessBuilder processBuilder = new ProcessBuilder(getProcessArgs(repoPath.or(""), repoDepPath.or(""), branch.or(""), tag.or(""),
+                headCommitMessage, author)).redirectErrorStream(true);
         Process process = processBuilder.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         ProcessResult result = waitFor(prefix, reader, process);
@@ -134,6 +142,33 @@ public class OctoReceiverResource {
         } else {
             return null;
         }
+    }
+
+    private String getScript(String input) {
+        if (!input.contains(" ")) {
+            return input;
+        }
+        String[] parsed = input.split(" ");
+        return parsed[0];
+    }
+
+    private String[] getSupplementalArgs(String input) {
+        if (!input.contains(" ")) {
+            return new String[0];
+        }
+        String[] parsed = input.split(" ");
+        return Arrays.copyOfRange(parsed, 1, parsed.length);
+    }
+
+    private String[] getProcessArgs(String ... args) {
+        int argsLength = (onlyUseScriptArgs || (args == null) ? 0 : args.length);
+        String[] combined = new String[supplementalArgs.length + argsLength + 1];
+        combined[0] = script;
+        System.arraycopy(supplementalArgs, 0, combined, 1, supplementalArgs.length);
+        if (argsLength > 0) {
+            System.arraycopy(args, 0, combined, supplementalArgs.length + 1, args.length);
+        }
+        return combined;
     }
 
 }
