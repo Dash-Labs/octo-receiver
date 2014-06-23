@@ -109,7 +109,7 @@ public class OctoReceiverResource {
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         ProcessResult result = waitFor(prefix, reader, process);
         if (result.result != 0) {
-            LOG.error("{} {} - failed with result code [ {} ]", prefix, script, result);
+            LOG.error("{} {} - failed with result code [ {} ]", prefix, script, result.result);
             String htmlLogs = result.logs.toString().replaceAll("\n", "<br/>");
             emailer.sendMessage(failureSubjectPrefix, failureBodyPrefix, htmlLogs, gitHubPayload, failureEmail);
         }

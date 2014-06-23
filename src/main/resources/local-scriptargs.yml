@@ -1,4 +1,4 @@
-script: curl -X POST http://localhost:8082/tasks/gc
+script: curl -f -X POST http://localhost:8082/tasks/foo
 
 onlyUseScriptArgs: true
 
