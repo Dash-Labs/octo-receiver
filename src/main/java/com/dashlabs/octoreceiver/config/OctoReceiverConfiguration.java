@@ -41,13 +41,15 @@ public class OctoReceiverConfiguration extends Configuration {
     @NotNull
     private final String failureEmail;
 
+    private final CodeDeploymentConfiguration codeDeploymentConfiguration;
+
     private OctoReceiverConfiguration() {
-        this(null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null);
     }
 
     public OctoReceiverConfiguration(String script, Boolean onlyUseScriptArgs, Map<String, String> repositoryMapping, Map<String, String> repositoryDependencyMapping,
                                      EmailConfiguration emailConfiguration, String failureSubjectPrefix, String failureBodyPrefix,
-                                     String failureEmail) {
+                                     String failureEmail, CodeDeploymentConfiguration codeDeploymentConfiguration) {
         this.script = script;
         this.onlyUseScriptArgs = onlyUseScriptArgs;
         this.repositoryMapping = repositoryMapping;
@@ -56,6 +58,7 @@ public class OctoReceiverConfiguration extends Configuration {
         this.failureSubjectPrefix = failureSubjectPrefix;
         this.failureBodyPrefix = failureBodyPrefix;
         this.failureEmail = failureEmail;
+        this.codeDeploymentConfiguration = codeDeploymentConfiguration;
     }
 
     public String getScript() {
@@ -88,5 +91,9 @@ public class OctoReceiverConfiguration extends Configuration {
 
     public String getFailureEmail() {
         return failureEmail;
+    }
+
+    public CodeDeploymentConfiguration getCodeDeploymentConfiguration() {
+        return codeDeploymentConfiguration;
     }
 }
