@@ -14,6 +14,13 @@ failureBodyPrefix: Could not invoke the GC task
 
 failureEmail: commiters@dash.by
 
+codeDeploymentConfiguration:
+    loadBalancerName: unknown
+    codeDeploymentScript: src/main/resources/test.sh
+    codeCheckoutScript: src/main/resources/test.sh
+    awsAccessKey: unknown
+    awsSecretKey: unknown
+
 logging:
     level: INFO
     loggers:

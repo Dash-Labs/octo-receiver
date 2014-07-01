@@ -1,9 +1,15 @@
 package com.dashlabs.octoreceiver;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+import com.dashlabs.octoreceiver.config.CodeDeploymentConfiguration;
 import com.dashlabs.octoreceiver.config.EmailConfiguration;
 import com.dashlabs.octoreceiver.config.OctoReceiverConfiguration;
 import com.dashlabs.octoreceiver.health.OctoReceiverHealthCheck;
 import com.dashlabs.octoreceiver.resources.OctoReceiverResource;
+import com.dashlabs.octoreceiver.tasks.DeployCodeTask;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
@@ -39,9 +45,14 @@ public class OctoReceiverService extends Service<OctoReceiverConfiguration> {
                 executor);
 
         environment.addResource(octoReceiverResource);
-
+        CodeDeploymentConfiguration codeDeploymentConfiguration = configuration.getCodeDeploymentConfiguration();
+        AWSCredentials awsCredentials = new BasicAWSCredentials(codeDeploymentConfiguration.getAwsAccessKey(), codeDeploymentConfiguration.getAwsSecretKey());
+        AmazonElasticLoadBalancingClient loadBalancingClient = new AmazonElasticLoadBalancingClient(awsCredentials);
+        AmazonEC2Client ec2Client = new AmazonEC2Client(awsCredentials);
+        DeployCodeTask deployCodeTask = new DeployCodeTask(codeDeploymentConfiguration, loadBalancingClient, ec2Client);
         OctoReceiverHealthCheck check = new OctoReceiverHealthCheck(octoReceiverResource);
         environment.addHealthCheck(check);
+        environment.addTask(deployCodeTask);
 
     }
 }
