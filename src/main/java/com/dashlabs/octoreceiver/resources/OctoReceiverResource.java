@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,9 +68,12 @@ public class OctoReceiverResource {
 
     private final String failureEmail;
 
+    private final Executor executor;
+
     public OctoReceiverResource(ObjectMapper mapper, String script, Boolean onlyUseScriptArgs, Map<String, String> repositoryMapping,
                                 Map<String, String> repositoryDependencyMapping, OctoReceiverEmailer emailer,
-                                String failureSubjectPrefix, String failureBodyPrefix, String failureEmail) {
+                                String failureSubjectPrefix, String failureBodyPrefix, String failureEmail,
+                                Executor executor) {
         this.mapper = mapper;
         this.script = getScript(script);
         this.onlyUseScriptArgs = (onlyUseScriptArgs == null ? false : onlyUseScriptArgs);
@@ -80,6 +84,7 @@ public class OctoReceiverResource {
         this.failureSubjectPrefix = failureSubjectPrefix;
         this.failureBodyPrefix = failureBodyPrefix;
         this.failureEmail = failureEmail;
+        this.executor = executor;
     }
 
     @POST
@@ -88,7 +93,20 @@ public class OctoReceiverResource {
         if ((payload == null) || payload.isEmpty()) {
             return;
         }
-        GitHubWebHookPayload gitHubPayload = mapper.readValue(payload, GitHubWebHookPayload.class);
+        final GitHubWebHookPayload gitHubPayload = mapper.readValue(payload, GitHubWebHookPayload.class);
+        executor.execute(new Runnable() {
+            @Override public void run() {
+                try {
+                    handleGitHubPayload(gitHubPayload);
+                } catch (Exception e) {
+                    LOG.error("Failed processing [ {} ]", gitHubPayload);
+                    emailer.sendMessage(failureSubjectPrefix, failureBodyPrefix, String.format("%s", e.getMessage()), gitHubPayload, failureEmail);
+                }
+            }
+        });
+    }
+
+    private void handleGitHubPayload(GitHubWebHookPayload gitHubPayload) throws Exception {
         Optional<String> branch = getBranch(gitHubPayload.getRef());
         Optional<String> tag = getTag(gitHubPayload.getRef());
         String repositoryName = gitHubPayload.getRepository().getName();

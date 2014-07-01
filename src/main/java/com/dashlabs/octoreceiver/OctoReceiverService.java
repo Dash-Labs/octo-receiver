@@ -8,6 +8,9 @@ import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 /**
  * User: blangel
  * Date: 1/7/14
@@ -28,9 +31,12 @@ public class OctoReceiverService extends Service<OctoReceiverConfiguration> {
         EmailConfiguration emailConfig = configuration.getEmailConfiguration();
         OctoReceiverEmailer emailer = new OctoReceiverEmailer(emailConfig.getUser(), emailConfig.getPassword(), emailConfig.getSmtpHost(), emailConfig.getSmtpPort());
 
+        Executor executor = Executors.newSingleThreadExecutor();
+
         OctoReceiverResource octoReceiverResource = new OctoReceiverResource(environment.getObjectMapperFactory().build(),
                 configuration.getScript(), configuration.getOnlyUseScriptArgs(), configuration.getRepositoryMapping(), configuration.getRepositoryDependencyMapping(),
-                emailer, configuration.getFailureSubjectPrefix(), configuration.getFailureBodyPrefix(), configuration.getFailureEmail());
+                emailer, configuration.getFailureSubjectPrefix(), configuration.getFailureBodyPrefix(), configuration.getFailureEmail(),
+                executor);
 
         environment.addResource(octoReceiverResource);
 
