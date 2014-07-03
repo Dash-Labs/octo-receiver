@@ -9,7 +9,7 @@ import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.dashlabs.octoreceiver.config.CodeDeploymentConfiguration;
 import com.dashlabs.octoreceiver.model.ProcessResult;
 import com.google.common.collect.ImmutableMultimap;
-import com.yammer.dropwizard.tasks.Task;
+import io.dropwizard.servlets.tasks.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

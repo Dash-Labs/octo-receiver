@@ -1,6 +1,6 @@
 package com.dashlabs.octoreceiver.config;
 
-import com.yammer.dropwizard.config.Configuration;
+import io.dropwizard.Configuration;
 
 import javax.validation.constraints.NotNull;
 

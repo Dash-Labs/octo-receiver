@@ -1,7 +1,7 @@
 package com.dashlabs.octoreceiver.health;
 
 import com.dashlabs.octoreceiver.resources.OctoReceiverResource;
-import com.yammer.metrics.core.HealthCheck;
+import com.codahale.metrics.health.HealthCheck;
 
 /**
  * User: blangel
@@ -13,7 +13,6 @@ public class OctoReceiverHealthCheck extends HealthCheck {
     private final OctoReceiverResource resource;
 
     public OctoReceiverHealthCheck(OctoReceiverResource resource) {
-        super("octo-receiver-resource");
         this.resource = resource;
     }
 
