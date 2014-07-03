@@ -1,4 +1,4 @@
-script: curl -f -X POST http://localhost:8082/tasks/foo
+script: curl -f -X POST 'http://localhost:8082/tasks/foo?project=foo&env=staging'
 
 onlyUseScriptArgs: true
 
@@ -18,6 +18,7 @@ codeDeploymentConfiguration:
     loadBalancerName: unknown
     codeDeploymentScript: src/main/resources/test.sh
     codeCheckoutScript: src/main/resources/test.sh
+    deploymentEmail: unknown
     awsAccessKey: unknown
     awsSecretKey: unknown
 

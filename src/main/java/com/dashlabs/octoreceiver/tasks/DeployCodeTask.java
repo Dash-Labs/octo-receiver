@@ -6,6 +6,7 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.*;
+import com.dashlabs.octoreceiver.OctoReceiverEmailer;
 import com.dashlabs.octoreceiver.config.CodeDeploymentConfiguration;
 import com.dashlabs.octoreceiver.model.ProcessResult;
 import com.google.common.collect.ImmutableMultimap;
@@ -35,11 +36,15 @@ public class DeployCodeTask extends Task {
 
     private AmazonEC2Client ec2Client;
 
-    public DeployCodeTask(CodeDeploymentConfiguration configuration, AmazonElasticLoadBalancingClient client, AmazonEC2Client ec2Client) {
+    private final OctoReceiverEmailer emailer;
+
+    public DeployCodeTask(CodeDeploymentConfiguration configuration, AmazonElasticLoadBalancingClient client, AmazonEC2Client ec2Client,
+                          OctoReceiverEmailer emailer) {
         super("deploy");
         this.configuration = configuration;
         this.client = client;
         this.ec2Client = ec2Client;
+        this.emailer = emailer;
     }
 
     @Override public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
@@ -70,6 +75,18 @@ public class DeployCodeTask extends Task {
         List<Instance> instances = loadBalancerDescription.getInstances();
         deploy(instances);
         LOG.info("Done deploying to all instances.");
+        String projectName, env;
+        if (parameters.get("project").isEmpty()) {
+            projectName = "unknown project";
+        } else {
+            projectName = parameters.get("project").iterator().next();
+        }
+        if (parameters.get("env").isEmpty()) {
+            env = "unknown environment";
+        } else {
+            env = parameters.get("env").iterator().next();
+        }
+        emailer.sendSuccessfulDeploymentMessage(projectName, env, configuration.getDeploymentEmail());
     }
 
     /**
