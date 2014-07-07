@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -69,7 +72,9 @@ public class OctoReceiverEmailer {
             message.setFrom(new InternetAddress(user));
             Address[] parsed = InternetAddress.parse(csv(addresses));
             message.setRecipients(Message.RecipientType.TO, parsed);
-            message.setSubject(String.format("Deployment complete for %s (%s)", project, environment));
+            DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+            String deploymentDate = df.format(new Date());
+            message.setSubject(String.format("Deployment finished for %s (%s) [ %s ]", project, environment, deploymentDate));
             String content = String.format("Deployment successfully completed for %s on %s.", project, environment);
             message.setContent(content, "text/html; charset=utf-8");
             Transport.send(message);
