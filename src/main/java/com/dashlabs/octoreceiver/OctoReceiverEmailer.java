@@ -72,7 +72,7 @@ public class OctoReceiverEmailer {
             message.setFrom(new InternetAddress(user));
             Address[] parsed = InternetAddress.parse(csv(addresses));
             message.setRecipients(Message.RecipientType.TO, parsed);
-            DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+            DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm");
             String deploymentDate = df.format(new Date());
             message.setSubject(String.format("Deployment finished for %s (%s) [ %s ]", project, environment, deploymentDate));
             String content = String.format("Deployment successfully completed for %s on %s.", project, environment);
