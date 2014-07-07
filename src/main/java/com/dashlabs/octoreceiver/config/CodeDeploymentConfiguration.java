@@ -10,27 +10,32 @@ import javax.validation.constraints.NotNull;
 public class CodeDeploymentConfiguration extends Configuration {
 
     @NotNull
-    private String loadBalancerName;
+    private final String loadBalancerName;
 
     @NotNull
-    private String codeDeploymentScript;
+    private final String codeDeploymentScript;
 
     @NotNull
-    private String codeCheckoutScript;
+    private final String codeCheckoutScript;
 
     @NotNull
-    private String awsAccessKey;
+    private final String awsAccessKey;
 
     @NotNull
-    private String awsSecretKey;
+    private final String awsSecretKey;
+
+    @NotNull
+    private final String deploymentEmail;
 
     private CodeDeploymentConfiguration() {
-        this(null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
-    public CodeDeploymentConfiguration(String loadBalancerName, String codeDeploymentScript, String awsAccessKey, String awsSecretKey) {
+    public CodeDeploymentConfiguration(String loadBalancerName, String codeDeploymentScript, String codeCheckoutScript, String awsAccessKey, String awsSecretKey, String deploymentEmail) {
         this.loadBalancerName = loadBalancerName;
         this.codeDeploymentScript = codeDeploymentScript;
+        this.codeCheckoutScript = codeCheckoutScript;
+        this.deploymentEmail = deploymentEmail;
         this.awsAccessKey = awsAccessKey;
         this.awsSecretKey = awsSecretKey;
     }
@@ -53,5 +58,9 @@ public class CodeDeploymentConfiguration extends Configuration {
 
     public String getCodeCheckoutScript() {
         return codeCheckoutScript;
+    }
+
+    public String getDeploymentEmail() {
+        return deploymentEmail;
     }
 }

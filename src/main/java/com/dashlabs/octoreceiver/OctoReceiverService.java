@@ -48,11 +48,10 @@ public class OctoReceiverService extends Application<OctoReceiverConfiguration> 
             AWSCredentials awsCredentials = new BasicAWSCredentials(codeDeploymentConfiguration.getAwsAccessKey(), codeDeploymentConfiguration.getAwsSecretKey());
             AmazonElasticLoadBalancingClient loadBalancingClient = new AmazonElasticLoadBalancingClient(awsCredentials);
             AmazonEC2Client ec2Client = new AmazonEC2Client(awsCredentials);
-            DeployCodeTask deployCodeTask = new DeployCodeTask(codeDeploymentConfiguration, loadBalancingClient, ec2Client);
+            DeployCodeTask deployCodeTask = new DeployCodeTask(codeDeploymentConfiguration, loadBalancingClient, ec2Client, emailer);
             environment.admin().addTask(deployCodeTask);
         }
         OctoReceiverHealthCheck check = new OctoReceiverHealthCheck(octoReceiverResource);
         environment.healthChecks().register("octo-receiver-resource", check);
-
     }
 }

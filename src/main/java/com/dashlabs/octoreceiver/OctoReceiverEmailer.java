@@ -62,6 +62,25 @@ public class OctoReceiverEmailer {
         return true;
     }
 
+    public boolean sendSuccessfulDeploymentMessage(String project, String environment, String ... addresses) {
+        Session session = createSession();
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(user));
+            Address[] parsed = InternetAddress.parse(csv(addresses));
+            message.setRecipients(Message.RecipientType.TO, parsed);
+            message.setSubject(String.format("Deployment complete for %s (%s)", project, environment));
+            String content = String.format("Deployment successfully completed for %s on %s.", project, environment);
+            message.setContent(content, "text/html; charset=utf-8");
+            Transport.send(message);
+        } catch (MessagingException me) {
+            LOG.error("Could not send email to {}", (Object[]) addresses);
+            LOG.error(me.getMessage(), me);
+            return false;
+        }
+        return true;
+    }
+
     private String csv(String... addresses) {
         StringBuilder buffer = new StringBuilder();
         boolean first = true;
