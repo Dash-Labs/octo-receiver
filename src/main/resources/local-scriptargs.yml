@@ -1,4 +1,4 @@
-script: curl -f -X POST 'http://localhost:8082/tasks/foo?project=foo&env=staging'
+script: curl -f -X POST http://localhost:8082/tasks/foo
 
 onlyUseScriptArgs: true
 
@@ -19,6 +19,8 @@ codeDeploymentConfiguration:
     codeDeploymentScript: src/main/resources/test.sh
     codeCheckoutScript: src/main/resources/test.sh
     deploymentEmail: unknown
+    projectName: unknown
+    environment: unknown
     awsAccessKey: unknown
     awsSecretKey: unknown
 
