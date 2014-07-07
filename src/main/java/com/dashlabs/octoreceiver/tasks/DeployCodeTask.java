@@ -75,18 +75,7 @@ public class DeployCodeTask extends Task {
         List<Instance> instances = loadBalancerDescription.getInstances();
         deploy(instances);
         LOG.info("Done deploying to all instances.");
-        String projectName, env;
-        if (parameters.get("project").isEmpty()) {
-            projectName = "unknown project";
-        } else {
-            projectName = parameters.get("project").iterator().next();
-        }
-        if (parameters.get("env").isEmpty()) {
-            env = "unknown environment";
-        } else {
-            env = parameters.get("env").iterator().next();
-        }
-        emailer.sendSuccessfulDeploymentMessage(projectName, env, configuration.getDeploymentEmail());
+        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), configuration.getEnvironment(), configuration.getDeploymentEmail());
     }
 
     /**

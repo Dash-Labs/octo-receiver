@@ -27,17 +27,25 @@ public class CodeDeploymentConfiguration extends Configuration {
     @NotNull
     private final String deploymentEmail;
 
+    @NotNull
+    private final String projectName;
+
+    @NotNull
+    private final String environment;
+
     private CodeDeploymentConfiguration() {
-        this(null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
-    public CodeDeploymentConfiguration(String loadBalancerName, String codeDeploymentScript, String codeCheckoutScript, String awsAccessKey, String awsSecretKey, String deploymentEmail) {
+    public CodeDeploymentConfiguration(String loadBalancerName, String codeDeploymentScript, String codeCheckoutScript, String awsAccessKey, String awsSecretKey, String deploymentEmail, String projectName, String environment) {
         this.loadBalancerName = loadBalancerName;
         this.codeDeploymentScript = codeDeploymentScript;
         this.codeCheckoutScript = codeCheckoutScript;
         this.deploymentEmail = deploymentEmail;
         this.awsAccessKey = awsAccessKey;
         this.awsSecretKey = awsSecretKey;
+        this.projectName = projectName;
+        this.environment = environment;
     }
 
     public String getLoadBalancerName() {
@@ -62,5 +70,13 @@ public class CodeDeploymentConfiguration extends Configuration {
 
     public String getDeploymentEmail() {
         return deploymentEmail;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public String getEnvironment() {
+        return environment;
     }
 }
