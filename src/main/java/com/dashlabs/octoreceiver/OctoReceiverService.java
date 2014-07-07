@@ -10,6 +10,9 @@ import com.dashlabs.octoreceiver.config.OctoReceiverConfiguration;
 import com.dashlabs.octoreceiver.health.OctoReceiverHealthCheck;
 import com.dashlabs.octoreceiver.resources.OctoReceiverResource;
 import com.dashlabs.octoreceiver.tasks.DeployCodeTask;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -37,7 +40,12 @@ public class OctoReceiverService extends Application<OctoReceiverConfiguration> 
 
         Executor executor = Executors.newSingleThreadExecutor();
 
-        OctoReceiverResource octoReceiverResource = new OctoReceiverResource(environment.getObjectMapper(),
+        ObjectMapper mapper = environment.getObjectMapper();
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        OctoReceiverResource octoReceiverResource = new OctoReceiverResource(mapper,
                 configuration.getScript(), configuration.getOnlyUseScriptArgs(), configuration.getRepositoryMapping(), configuration.getRepositoryDependencyMapping(),
                 emailer, configuration.getFailureSubjectPrefix(), configuration.getFailureBodyPrefix(), configuration.getFailureEmail(),
                 executor);
