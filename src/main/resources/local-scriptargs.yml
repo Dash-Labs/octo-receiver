@@ -27,18 +27,14 @@ codeDeploymentConfiguration:
 logging:
     level: INFO
     loggers:
-        "com.dashlabs": INFO
+        com.dashlabs: INFO
     appenders:
         - type: console
-          threshold: ALL
-          timeZone: UTC
           target: stdout
         - type: file
-          threshold: ALL
           currentLogFilename: /tmp/octoreceiver.log
           archivedLogFilenamePattern: /tmp/octoreceiver-%d.log.gz
           archivedFileCount: 5
-          timeZone: UTC
 
 server:
     type: default
@@ -54,8 +50,6 @@ server:
         timeZone: UTC
         appenders:
             - type: file
-              threshold: ALL
               currentLogFilename: /tmp/http-octoreceiver.log
               archivedLogFilenamePattern: /tmp/http-octoreceiver-%d.log.gz
               archivedFileCount: 5
-              timeZone: UTC
