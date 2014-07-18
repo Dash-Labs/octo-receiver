@@ -1,7 +1,6 @@
 package com.dashlabs.octoreceiver;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.*;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.dashlabs.octoreceiver.config.CodeDeploymentConfiguration;
@@ -53,7 +52,7 @@ public class OctoReceiverService extends Application<OctoReceiverConfiguration> 
         environment.jersey().register(octoReceiverResource);
         CodeDeploymentConfiguration codeDeploymentConfiguration = configuration.getCodeDeploymentConfiguration();
         if (codeDeploymentConfiguration != null) {
-            AWSCredentials awsCredentials = new BasicAWSCredentials(codeDeploymentConfiguration.getAwsAccessKey(), codeDeploymentConfiguration.getAwsSecretKey());
+            AWSCredentialsProvider awsCredentials = new AWSCredentialsProviderChain(new InstanceProfileCredentialsProvider(), new SystemPropertiesCredentialsProvider());
             AmazonElasticLoadBalancingClient loadBalancingClient = new AmazonElasticLoadBalancingClient(awsCredentials);
             AmazonEC2Client ec2Client = new AmazonEC2Client(awsCredentials);
             DeployCodeTask deployCodeTask = new DeployCodeTask(codeDeploymentConfiguration, loadBalancingClient, ec2Client, emailer);

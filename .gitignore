@@ -12,4 +12,4 @@ server/nginx.pid
 server/nginx.bak.conf
 tmp/
 .sass-cache/
-.ply/config/local.properties
+.ply/config/local.*

@@ -21,8 +21,6 @@ codeDeploymentConfiguration:
     deploymentEmail: unknown
     projectName: unknown
     environment: unknown
-    awsAccessKey: unknown
-    awsSecretKey: unknown
 
 logging:
     level: INFO
