@@ -42,6 +42,57 @@ public class OctoReceiverResource {
         }
     }
 
+    private static class GitHubWebHookPayloadCompact {
+
+        private static final String REPO = "${repo}";
+
+        private static final String REPO_DEP = "${repo_dep}";
+
+        private static final String BRANCH = "${branch}";
+
+        private static final String TAG = "${tag}";
+
+        private static final String HEAD_COMMIT_MSG = "${head_commit_msg}";
+
+        private static final String AUTHOR = "${author}";
+
+        private final String repoPath;
+
+        private final String repoDepPath;
+
+        private final String branch;
+
+        private final String tag;
+
+        private final String headCommitMessage;
+
+        private final String author;
+
+        private GitHubWebHookPayloadCompact(String repoPath, String repoDepPath, String branch, String tag, String headCommitMessage,
+                                            String author) {
+            this.repoPath = repoPath;
+            this.repoDepPath = repoDepPath;
+            this.branch = branch;
+            this.tag = tag;
+            this.headCommitMessage = headCommitMessage;
+            this.author = author;
+        }
+
+        private String[] getArgs() {
+            return new String[] { repoPath, repoDepPath, branch, tag, headCommitMessage, author };
+        }
+
+        private String filter(String value) {
+            return value.replaceAll(Pattern.quote(REPO), repoPath)
+                    .replaceAll(Pattern.quote(REPO_DEP), repoDepPath)
+                    .replaceAll(Pattern.quote(BRANCH), branch)
+                    .replaceAll(Pattern.quote(TAG), tag)
+                    .replaceAll(Pattern.quote(HEAD_COMMIT_MSG), headCommitMessage)
+                    .replaceAll(Pattern.quote(AUTHOR), author);
+        }
+
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(OctoReceiverResource.class);
 
     private static final Pattern GIT_REF_BRANCH_REGEX = Pattern.compile("refs/heads/(.*)");
@@ -121,8 +172,9 @@ public class OctoReceiverResource {
         String author = String.format("%s <%s>", gitHubPayload.getPusher().getName(), gitHubPayload.getPusher().getEmail());
         // invoke the script with the arguments
         String prefix = String.format("%s%s@%s", branch.or(""), tag.or(""), repositoryName);
-        ProcessBuilder processBuilder = new ProcessBuilder(getProcessArgs(repoPath.or(""), repoDepPath.or(""), branch.or(""), tag.or(""),
-                headCommitMessage, author)).redirectErrorStream(true);
+        GitHubWebHookPayloadCompact payloadCompact = new GitHubWebHookPayloadCompact(repoPath.or(""), repoDepPath.or(""), branch.or(""),
+                tag.or(""), headCommitMessage, author);
+        ProcessBuilder processBuilder = new ProcessBuilder(getProcessArgs(payloadCompact)).redirectErrorStream(true);
         Process process = processBuilder.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         ProcessResult result = waitFor(prefix, reader, process);
@@ -178,15 +230,25 @@ public class OctoReceiverResource {
         return Arrays.copyOfRange(parsed, 1, parsed.length);
     }
 
-    private String[] getProcessArgs(String ... args) {
+    private String[] getProcessArgs(GitHubWebHookPayloadCompact gitHubWebHookPayloadCompact) {
+        String[] args = gitHubWebHookPayloadCompact.getArgs();
         int argsLength = (onlyUseScriptArgs || (args == null) ? 0 : args.length);
-        String[] combined = new String[supplementalArgs.length + argsLength + 1];
+        String[] filtered = filterSupplementalArgs(gitHubWebHookPayloadCompact);
+        String[] combined = new String[filtered.length + argsLength + 1];
         combined[0] = script;
-        System.arraycopy(supplementalArgs, 0, combined, 1, supplementalArgs.length);
+        System.arraycopy(filtered, 0, combined, 1, filtered.length);
         if (argsLength > 0) {
-            System.arraycopy(args, 0, combined, supplementalArgs.length + 1, args.length);
+            System.arraycopy(args, 0, combined, filtered.length + 1, args.length);
         }
         return combined;
+    }
+
+    private String[] filterSupplementalArgs(GitHubWebHookPayloadCompact gitHubWebHookPayloadCompact) {
+        String[] filtered = new String[supplementalArgs.length];
+        for (int i = 0; i < supplementalArgs.length; i++) {
+            filtered[i] = gitHubWebHookPayloadCompact.filter(supplementalArgs[i]);
+        }
+        return filtered;
     }
 
 }
