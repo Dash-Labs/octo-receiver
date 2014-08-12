@@ -1,4 +1,4 @@
-script: curl -f -X POST http://localhost:8082/tasks/foo&branch=${branch}
+script: curl -f -X POST http://localhost:8082/tasks/foo?branch=${branch}
 
 onlyUseScriptArgs: true
 

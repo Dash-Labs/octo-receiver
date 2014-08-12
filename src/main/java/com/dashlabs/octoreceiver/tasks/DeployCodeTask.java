@@ -9,6 +9,7 @@ import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.dashlabs.octoreceiver.OctoReceiverEmailer;
 import com.dashlabs.octoreceiver.config.CodeDeploymentConfiguration;
 import com.dashlabs.octoreceiver.model.ProcessResult;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import org.slf4j.Logger;
@@ -30,13 +31,19 @@ public class DeployCodeTask extends Task {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeployCodeTask.class);
 
-    private CodeDeploymentConfiguration configuration;
+    private static final String BRANCH_DEFAULT = "master";
 
-    private AmazonElasticLoadBalancingClient client;
+    private final CodeDeploymentConfiguration configuration;
 
-    private AmazonEC2Client ec2Client;
+    private final AmazonElasticLoadBalancingClient client;
+
+    private final AmazonEC2Client ec2Client;
 
     private final OctoReceiverEmailer emailer;
+
+    private enum QueryParams{
+        branch;
+    }
 
     public DeployCodeTask(CodeDeploymentConfiguration configuration, AmazonElasticLoadBalancingClient client, AmazonEC2Client ec2Client,
                           OctoReceiverEmailer emailer) {
@@ -48,8 +55,15 @@ public class DeployCodeTask extends Task {
     }
 
     @Override public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
-        LOG.info("Fetching the latest code for deployment ...");
-        int result = invokeScript(configuration.getCodeCheckoutScript(), null);
+        String branchName;
+        ImmutableList<String> branchList = parameters.get(QueryParams.branch.name()).asList();
+        if (branchList.isEmpty()) {
+            branchName = BRANCH_DEFAULT;
+        } else {
+            branchName = branchList.iterator().next();
+        }
+        LOG.info("Fetching the latest code for deployment from branch {}", branchName);
+        int result = invokeScript(configuration.getCodeCheckoutScript(), branchName);
         LOG.info("Result of invoking the code checkout script: {}", result);
         if (result != 0) {
             throw new RuntimeException(String.format("There was an error invoking the code checkout script. Status code [%d]", result));
@@ -75,7 +89,8 @@ public class DeployCodeTask extends Task {
         List<Instance> instances = loadBalancerDescription.getInstances();
         deploy(instances);
         LOG.info("Done deploying to all instances.");
-        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), configuration.getEnvironment(), configuration.getDeploymentEmail());
+        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), configuration.getEnvironment(),
+                configuration.getDeploymentEmail());
     }
 
     /**
