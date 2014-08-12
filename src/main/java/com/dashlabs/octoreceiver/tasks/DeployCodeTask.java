@@ -89,7 +89,7 @@ public class DeployCodeTask extends Task {
         List<Instance> instances = loadBalancerDescription.getInstances();
         deploy(instances);
         LOG.info("Done deploying to all instances.");
-        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), configuration.getEnvironment(),
+        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), branchName, configuration.getEnvironment(),
                 configuration.getDeploymentEmail());
     }
 
