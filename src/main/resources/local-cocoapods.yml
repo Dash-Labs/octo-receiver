@@ -1,0 +1,73 @@
+script: src/main/resources/cocoapodscreate.sh
+
+repositoryMapping:
+    crystals-objc: ../../crystals-objc
+    cocoapods-specs/crystals-objc: ../projects/cocoapods-specs/crystals-objc
+    magneto-objc: ../../magneto-objc
+    cocoapods-specs/magneto-objc: ../projects/cocoapods-specs/magneto-objc
+    lenoir-api-objc: ../../lenoir-api-objc
+    cocoapods-specs/lenoir-api-objc: ../projects/cocoapods-specs/lenoir-api-objc
+    thor-crystals-objc: ../../thor-crystals-objc
+    cocoapods-specs/thor-crystals-objc: ../projects/cocoapods-specs/thor-crystals-objc
+    thor-magneto-objc: ../../thor-magneto-objc
+    cocoapods-specs/thor-magneto-objc: ../projects/cocoapods-specs/thor-magneto-objc
+    djed-objc: ../../djed-objc
+    cocoapods-specs/djed-objc: ../projects/cocoapods-specs/djed-objc
+
+repositoryDependencyMapping:
+    crystals-objc: cocoapods-specs/crystals-objc
+    magneto-objc: cocoapods-specs/magneto-objc
+    lenoir-api-objc: cocoapods-specs/lenoir-api-objc
+    thor-crystals-objc: cocoapods-specs/thor-crystals-objc
+    thor-magneto-objc: cocoapods-specs/thor-magneto-objc
+    djed-objc: cocoapods-specs/djed-objc
+
+onlyUseScriptArgs: false
+
+emailConfiguration:
+    user: hedgie@dash.by
+    password: unknown
+    smtpHost: smtp.gmail.com
+    smtpPort: 465
+
+failureSubjectPrefix: FAILURE echoing
+
+failureBodyPrefix: Could not echo
+
+failureEmail: commiters@dash.by
+
+logging:
+    level: INFO
+    loggers:
+        "com.dashlabs": INFO
+    appenders:
+        - type: console
+          threshold: ALL
+          timeZone: UTC
+          target: stdout
+        - type: file
+          threshold: ALL
+          currentLogFilename: /tmp/octoreceiver.log
+          archivedLogFilenamePattern: /tmp/octoreceiver-%d.log.gz
+          archivedFileCount: 5
+          timeZone: UTC
+
+server:
+    type: default
+    gzip:
+        bufferSize: 8KiB
+    applicationConnectors:
+        - type: http
+          port: 8081
+    adminConnectors:
+        - type: http
+          port: 8082
+    requestLog:
+        timeZone: UTC
+        appenders:
+            - type: file
+              threshold: ALL
+              currentLogFilename: /tmp/http-octoreceiver.log
+              archivedLogFilenamePattern: /tmp/http-octoreceiver-%d.log.gz
+              archivedFileCount: 5
+              timeZone: UTC
