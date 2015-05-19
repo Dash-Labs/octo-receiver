@@ -24,7 +24,7 @@ iterateSubspecs() {
   local directory=$3
   for f in *; do
     if [[ -d $f ]]; then
-      local fileCount=`find . -maxdepth 1 -type f -name '*.*' | wc -l | sed 's/^ *//g'`
+      local fileCount=`find $f/ -maxdepth 1 -type f -name '*.*' | wc -l | sed 's/^ *//g'`
       local specIncr=""
       local indentIncr=""
       if [[ "$fileCount" != "0" ]]; then
@@ -111,14 +111,14 @@ echo "$template" > "$repo_name.podspec"
 STATUS=$?
 checkStatus "Could not save template into podspec file $repo_name.podspec within $repo_cocoa/$version"
 
-git add -A
-STATUS=$?
-checkStatus "Could not 'git add -A' $repo_name.podspec within $repo_cocoa/$version"
+#git add -A
+#STATUS=$?
+#checkStatus "Could not 'git add -A' $repo_name.podspec within $repo_cocoa/$version"
 
-git commit --author="$author" -m "Creating $repo_name.podspec within $version - $message"
-STATUS=$?
-checkStatus "Could not 'git commit'"
+#git commit --author="$author" -m "Creating $repo_name.podspec within $version - $message"
+#STATUS=$?
+#checkStatus "Could not 'git commit'"
 
-git push
-STATUS=$?
-checkStatus "Could not 'git push'"
+#git push
+#STATUS=$?
+#checkStatus "Could not 'git push'"
