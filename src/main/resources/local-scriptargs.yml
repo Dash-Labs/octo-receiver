@@ -1,4 +1,4 @@
-script: curl -f -X POST http://localhost:8082/tasks/foo?branch=${branch}
+script: curl -f -X POST http://localhost:8082/tasks/foo?repo=${repo}&branch=${branch}
 
 onlyUseScriptArgs: true
 
@@ -14,13 +14,21 @@ failureBodyPrefix: Could not invoke the GC task
 
 failureEmail: commiters@dash.by
 
-codeDeploymentConfiguration:
-    loadBalancerName: unknown
-    codeDeploymentScript: src/main/resources/test.sh
-    codeCheckoutScript: src/main/resources/test.sh
-    deploymentEmail: unknown
-    projectName: unknown
-    environment: unknown
+codeDeploymentConfigurations:
+    lenoir-deploy-unknown:
+        loadBalancerName: unknown
+        codeDeploymentScript: src/main/resources/test-lenoir.sh
+        codeCheckoutScript: src/main/resources/test-lenoir.sh
+        deploymentEmail: unknown
+        projectName: unknown
+        environment: unknown
+    malzel-deploy-unknown:
+        loadBalancerName: unknown
+        codeDeploymentScript: src/main/resources/test-malzel.sh
+        codeCheckoutScript: src/main/resources/test-malzel.sh
+        deploymentEmail: unknown
+        projectName: unknown
+        environment: unknown
 
 logging:
     level: INFO

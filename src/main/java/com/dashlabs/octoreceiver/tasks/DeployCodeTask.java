@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by mpuri on 6/23/14.
+ * Created by mpuri on 6/23/14
  */
 public class DeployCodeTask extends Task {
 
@@ -33,7 +33,7 @@ public class DeployCodeTask extends Task {
 
     private static final String BRANCH_DEFAULT = "master";
 
-    private final CodeDeploymentConfiguration configuration;
+    private final Map<String, CodeDeploymentConfiguration> configurations;
 
     private final AmazonElasticLoadBalancingClient client;
 
@@ -42,25 +42,36 @@ public class DeployCodeTask extends Task {
     private final OctoReceiverEmailer emailer;
 
     private enum QueryParams{
-        branch;
+        repo, branch;
     }
 
-    public DeployCodeTask(CodeDeploymentConfiguration configuration, AmazonElasticLoadBalancingClient client, AmazonEC2Client ec2Client,
+    public DeployCodeTask(Map<String, CodeDeploymentConfiguration> configurations, AmazonElasticLoadBalancingClient client, AmazonEC2Client ec2Client,
                           OctoReceiverEmailer emailer) {
         super("deploy");
-        this.configuration = configuration;
+        this.configurations = configurations;
         this.client = client;
         this.ec2Client = ec2Client;
         this.emailer = emailer;
     }
 
     @Override public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+        String repoName;
+        ImmutableList<String> repoList = parameters.get(QueryParams.repo.name()).asList();
+        if (repoList.isEmpty()) {
+            throw new RuntimeException(String.format("Could not find the repository from the given parameters [ %s ]", parameters));
+        } else {
+            repoName = repoList.iterator().next();
+        }
         String branchName;
         ImmutableList<String> branchList = parameters.get(QueryParams.branch.name()).asList();
         if (branchList.isEmpty()) {
             branchName = BRANCH_DEFAULT;
         } else {
             branchName = branchList.iterator().next();
+        }
+        CodeDeploymentConfiguration configuration = configurations.get(repoName);
+        if (configuration == null) {
+            throw new RuntimeException(String.format("No configuration found for the given repository [ %s ]", repoName));
         }
         LOG.info("Fetching the latest code for deployment from branch {}", branchName);
         int result = invokeScript(configuration.getCodeCheckoutScript(), branchName);
@@ -87,7 +98,7 @@ public class DeployCodeTask extends Task {
                     configuration.getLoadBalancerName()));
         }
         List<Instance> instances = loadBalancerDescription.getInstances();
-        deploy(instances);
+        deploy(configuration, instances);
         LOG.info("Done deploying to all instances.");
         emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), branchName, configuration.getEnvironment(),
                 configuration.getDeploymentEmail());
@@ -101,23 +112,24 @@ public class DeployCodeTask extends Task {
      * <li> Adds the instance back to the load balancer</li>
      * </ul>
      *
+     * @param configuration to use for deployment
      * @param instances the instances that need to be redeployed
      * @throws IOException
      * @throws InterruptedException
      */
-    private void deploy(List<Instance> instances) throws IOException, InterruptedException {
+    private void deploy(CodeDeploymentConfiguration configuration, List<Instance> instances) throws IOException, InterruptedException {
         int result;
         Map<String, String> instanceAddresses = getInstanceIPAddresses(instances);
         for (Instance instance : instances) {
             LOG.info("Removing instance [{}] from the load balancer ", instance.getInstanceId());
-            removeFromLoadBalancer(instance);
+            removeFromLoadBalancer(configuration, instance);
             LOG.info("Invoking remote deployment on the  instance [{}]", instance.getInstanceId());
             result = invokeScript(configuration.getCodeDeploymentScript(), instanceAddresses.get(instance.getInstanceId()));
             if (result != 0) {
                 throw new RuntimeException(String.format("There was an error invoking the deployment script. Status code [%d]", result));
             }
             LOG.info("Adding back the instance to the load balancer [{}]", instance.getInstanceId());
-            addToLoadBalancer(instance);
+            addToLoadBalancer(configuration, instance);
         }
     }
 
@@ -147,9 +159,10 @@ public class DeployCodeTask extends Task {
     /**
      * Removes the given instance from the load balancer
      *
-     * @param instance
+     * @param configuration to use to retrieve load balancer information
+     * @param instance to remove from load balancer
      */
-    private void removeFromLoadBalancer(Instance instance) {
+    private void removeFromLoadBalancer(CodeDeploymentConfiguration configuration, Instance instance) {
         List<Instance> instances = new ArrayList<Instance>(1);
         instances.add(instance);
         DeregisterInstancesFromLoadBalancerRequest request =
@@ -160,9 +173,10 @@ public class DeployCodeTask extends Task {
     /**
      * Registers the given instance with the load balancer
      *
-     * @param instance
+     * @param configuration to use to retrieve load balancer information
+     * @param instance to add to load balancer
      */
-    private void addToLoadBalancer(Instance instance) {
+    private void addToLoadBalancer(CodeDeploymentConfiguration configuration, Instance instance) {
         List<Instance> instances = new ArrayList<Instance>(1);
         instances.add(instance);
         RegisterInstancesWithLoadBalancerRequest request =

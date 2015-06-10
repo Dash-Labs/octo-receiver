@@ -16,6 +16,7 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -50,12 +51,12 @@ public class OctoReceiverService extends Application<OctoReceiverConfiguration> 
                 executor);
 
         environment.jersey().register(octoReceiverResource);
-        CodeDeploymentConfiguration codeDeploymentConfiguration = configuration.getCodeDeploymentConfiguration();
-        if (codeDeploymentConfiguration != null) {
+        Map<String, CodeDeploymentConfiguration> codeDeploymentConfigurations = configuration.getCodeDeploymentConfigurations();
+        if (codeDeploymentConfigurations != null) {
             AWSCredentialsProvider awsCredentials = new AWSCredentialsProviderChain(new InstanceProfileCredentialsProvider(), new SystemPropertiesCredentialsProvider());
             AmazonElasticLoadBalancingClient loadBalancingClient = new AmazonElasticLoadBalancingClient(awsCredentials);
             AmazonEC2Client ec2Client = new AmazonEC2Client(awsCredentials);
-            DeployCodeTask deployCodeTask = new DeployCodeTask(codeDeploymentConfiguration, loadBalancingClient, ec2Client, emailer);
+            DeployCodeTask deployCodeTask = new DeployCodeTask(codeDeploymentConfigurations, loadBalancingClient, ec2Client, emailer);
             environment.admin().addTask(deployCodeTask);
         }
         OctoReceiverHealthCheck check = new OctoReceiverHealthCheck(octoReceiverResource);

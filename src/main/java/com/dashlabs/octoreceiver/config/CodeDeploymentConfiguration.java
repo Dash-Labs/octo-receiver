@@ -5,7 +5,7 @@ import io.dropwizard.Configuration;
 import javax.validation.constraints.NotNull;
 
 /**
- * Created by mpuri on 6/23/14.
+ * Created by mpuri on 6/23/14
  */
 public class CodeDeploymentConfiguration extends Configuration {
 
