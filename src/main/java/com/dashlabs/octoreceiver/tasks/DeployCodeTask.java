@@ -100,6 +100,13 @@ public class DeployCodeTask extends Task {
         for (Reservation reservation : reservations) {
             List<com.amazonaws.services.ec2.model.Instance> instances = reservation.getInstances();
             for (com.amazonaws.services.ec2.model.Instance instance : instances) {
+                if ((instance.getState() == null) || (instance.getState().getCode() == null)
+                        || (instance.getState().getCode() != 16)) {
+                    LOG.info("Skipping non-running instance [ {} | {} | {} ]", instance.getInstanceId(),
+                            (instance.getState() == null ? "<null>" : instance.getState().getCode()),
+                            (instance.getState() == null ? "<null>" : instance.getState().getName()));
+                    continue;
+                }
                 LOG.info("Invoking remote deployment on the instance [{}]", instance.getInstanceId());
                 result = invokeScript(configuration.getCodeDeploymentScript(), instance.getPublicIpAddress(), configuration.getProjectName());
                 if (result != 0) {
