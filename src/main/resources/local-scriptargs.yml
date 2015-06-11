@@ -1,4 +1,4 @@
-script: curl -f -X POST http://localhost:8082/tasks/foo?repo=${repo}&branch=${branch}
+script: curl -f -X POST http://localhost:8082/tasks/foo?repo=${repo_name}&branch=${branch}
 
 onlyUseScriptArgs: true
 

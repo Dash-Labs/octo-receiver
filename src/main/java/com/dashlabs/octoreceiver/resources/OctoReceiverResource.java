@@ -48,6 +48,8 @@ public class OctoReceiverResource {
 
         private static final String REPO_DEP = "${repo_dep}";
 
+        private static final String REPO_NAME = "${repo_name}";
+
         private static final String BRANCH = "${branch}";
 
         private static final String TAG = "${tag}";
@@ -60,6 +62,8 @@ public class OctoReceiverResource {
 
         private final String repoDepPath;
 
+        private final String repoName;
+
         private final String branch;
 
         private final String tag;
@@ -68,10 +72,11 @@ public class OctoReceiverResource {
 
         private final String author;
 
-        private GitHubWebHookPayloadCompact(String repoPath, String repoDepPath, String branch, String tag, String headCommitMessage,
-                                            String author) {
+        private GitHubWebHookPayloadCompact(String repoPath, String repoDepPath, String repoName, String branch, String tag,
+                                            String headCommitMessage, String author) {
             this.repoPath = repoPath;
             this.repoDepPath = repoDepPath;
+            this.repoName = repoName;
             this.branch = branch;
             this.tag = tag;
             this.headCommitMessage = headCommitMessage;
@@ -79,12 +84,13 @@ public class OctoReceiverResource {
         }
 
         private String[] getArgs() {
-            return new String[] { repoPath, repoDepPath, branch, tag, headCommitMessage, author };
+            return new String[] { repoPath, repoDepPath, repoName, branch, tag, headCommitMessage, author };
         }
 
         private String filter(String value) {
             return value.replaceAll(Pattern.quote(REPO), repoPath)
                     .replaceAll(Pattern.quote(REPO_DEP), repoDepPath)
+                    .replaceAll(Pattern.quote(REPO_NAME), repoName)
                     .replaceAll(Pattern.quote(BRANCH), branch)
                     .replaceAll(Pattern.quote(TAG), tag)
                     .replaceAll(Pattern.quote(HEAD_COMMIT_MSG), headCommitMessage)
@@ -172,7 +178,7 @@ public class OctoReceiverResource {
         String author = String.format("%s <%s>", gitHubPayload.getPusher().getName(), gitHubPayload.getPusher().getEmail());
         // invoke the script with the arguments
         String prefix = String.format("%s%s@%s", branch.or(""), tag.or(""), repositoryName);
-        GitHubWebHookPayloadCompact payloadCompact = new GitHubWebHookPayloadCompact(repoPath.or(""), repoDepPath.or(""), branch.or(""),
+        GitHubWebHookPayloadCompact payloadCompact = new GitHubWebHookPayloadCompact(repoPath.or(""), repoDepPath.or(""), repositoryName, branch.or(""),
                 tag.or(""), headCommitMessage, author);
         ProcessBuilder processBuilder = new ProcessBuilder(getProcessArgs(payloadCompact)).redirectErrorStream(true);
         Process process = processBuilder.start();
