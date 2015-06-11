@@ -12,7 +12,7 @@ public class CodeDeploymentConfiguration extends Configuration {
 
     private static final String DEFAULT_CODE_DEPLOYMENT_SCRIPT = "/home/ubuntu/octoreceiver/application.remote.deploy";
 
-    private static final String DEFAULT_CODE_CHECKOUT_SCRIPT = " /home/ubuntu/octoreceiver/application.checkout";
+    private static final String DEFAULT_CODE_CHECKOUT_SCRIPT = "/home/ubuntu/octoreceiver/application.checkout";
 
     private final String loadBalancerName;
 
