@@ -41,6 +41,7 @@ public class OctoReceiverConfiguration extends Configuration {
     @NotNull
     private final String failureEmail;
 
+    @Valid
     private final Map<String, CodeDeploymentConfiguration> codeDeploymentConfigurations;
 
     private OctoReceiverConfiguration() {

@@ -23,7 +23,7 @@ codeDeploymentConfigurations:
         projectName: unknown
         environment: unknown
     malzel-deploy-unknown:
-        loadBalancerName: unknown
+        instanceGroupingTagValue: malzel-staging
         codeDeploymentScript: src/main/resources/test-malzel.sh
         codeCheckoutScript: src/main/resources/test-malzel.sh
         deploymentEmail: unknown

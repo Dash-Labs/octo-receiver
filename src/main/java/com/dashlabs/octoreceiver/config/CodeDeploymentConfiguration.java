@@ -1,6 +1,7 @@
 package com.dashlabs.octoreceiver.config;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.validation.ValidationMethod;
 
 import javax.validation.constraints.NotNull;
 
@@ -9,8 +10,13 @@ import javax.validation.constraints.NotNull;
  */
 public class CodeDeploymentConfiguration extends Configuration {
 
-    @NotNull
+    private static final String DEFAULT_CODE_DEPLOYMENT_SCRIPT = "/home/ubuntu/octoreceiver/application.remote.deploy";
+
+    private static final String DEFAULT_CODE_CHECKOUT_SCRIPT = " /home/ubuntu/octoreceiver/application.checkout";
+
     private final String loadBalancerName;
+
+    private final String instanceGroupingTagValue;
 
     @NotNull
     private final String codeDeploymentScript;
@@ -28,12 +34,13 @@ public class CodeDeploymentConfiguration extends Configuration {
     private final String environment;
 
     private CodeDeploymentConfiguration() {
-        this(null, null, null, null, null, null);
+        this(null, null, DEFAULT_CODE_DEPLOYMENT_SCRIPT, DEFAULT_CODE_CHECKOUT_SCRIPT, null, null, null);
     }
 
-    public CodeDeploymentConfiguration(String loadBalancerName, String codeDeploymentScript, String codeCheckoutScript,
+    public CodeDeploymentConfiguration(String loadBalancerName, String instanceGroupingTagValue, String codeDeploymentScript, String codeCheckoutScript,
                                        String deploymentEmail, String projectName, String environment) {
         this.loadBalancerName = loadBalancerName;
+        this.instanceGroupingTagValue = instanceGroupingTagValue;
         this.codeDeploymentScript = codeDeploymentScript;
         this.codeCheckoutScript = codeCheckoutScript;
         this.deploymentEmail = deploymentEmail;
@@ -43,6 +50,10 @@ public class CodeDeploymentConfiguration extends Configuration {
 
     public String getLoadBalancerName() {
         return loadBalancerName;
+    }
+
+    public String getInstanceGroupingTagValue() {
+        return instanceGroupingTagValue;
     }
 
     public String getCodeDeploymentScript() {
@@ -63,5 +74,22 @@ public class CodeDeploymentConfiguration extends Configuration {
 
     public String getEnvironment() {
         return environment;
+    }
+
+    @ValidationMethod(message = "Must specify one of either loadBalancerName or instanceGroupingTagValue")
+    public boolean isLoadBalancerNameOrInstanceGroupingTagValuePresent() {
+        return ((loadBalancerName != null) || (instanceGroupingTagValue != null));
+    }
+
+    @Override public String toString() {
+        return "CodeDeploymentConfiguration{" +
+                "loadBalancerName='" + loadBalancerName + '\'' +
+                ", instanceGroupingTagValue='" + instanceGroupingTagValue + '\'' +
+                ", codeDeploymentScript='" + codeDeploymentScript + '\'' +
+                ", codeCheckoutScript='" + codeCheckoutScript + '\'' +
+                ", deploymentEmail='" + deploymentEmail + '\'' +
+                ", projectName='" + projectName + '\'' +
+                ", environment='" + environment + '\'' +
+                '}';
     }
 }

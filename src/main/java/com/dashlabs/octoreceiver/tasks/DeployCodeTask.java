@@ -3,6 +3,7 @@ package com.dashlabs.octoreceiver.tasks;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.*;
@@ -74,11 +75,47 @@ public class DeployCodeTask extends Task {
             throw new RuntimeException(String.format("No configuration found for the given repository [ %s ]", repoName));
         }
         LOG.info("Fetching the latest code for deployment from branch {}", branchName);
-        int result = invokeScript(configuration.getCodeCheckoutScript(), branchName);
+        int result = invokeScript(configuration.getCodeCheckoutScript(), repoName, branchName);
         LOG.info("Result of invoking the code checkout script: {}", result);
         if (result != 0) {
             throw new RuntimeException(String.format("There was an error invoking the code checkout script. Status code [%d]", result));
         }
+        if (configuration.getLoadBalancerName() != null) {
+            deployViaLoadBalancer(configuration);
+        } else {
+            deployViaInstanceGroupingTagName(configuration);
+        }
+        LOG.info("Done deploying to all instances.");
+        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), branchName, configuration.getEnvironment(),
+                configuration.getDeploymentEmail());
+    }
+
+    private void deployViaInstanceGroupingTagName(CodeDeploymentConfiguration configuration) throws IOException, InterruptedException {
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
+        String tagName = String.format("tag:grouping");
+        describeInstancesRequest.withFilters(new Filter(tagName).withValues(configuration.getInstanceGroupingTagValue()));
+        DescribeInstancesResult describeInstancesResult = ec2Client.describeInstances(describeInstancesRequest);
+        List<Reservation> reservations = describeInstancesResult.getReservations();
+        int result;
+        for (Reservation reservation : reservations) {
+            List<com.amazonaws.services.ec2.model.Instance> instances = reservation.getInstances();
+            for (com.amazonaws.services.ec2.model.Instance instance : instances) {
+                LOG.info("Invoking remote deployment on the instance [{}]", instance.getInstanceId());
+                result = invokeScript(configuration.getCodeDeploymentScript(), instance.getPublicIpAddress(), configuration.getProjectName());
+                if (result != 0) {
+                    throw new RuntimeException(String.format("There was an error invoking the deployment script. Status code [%d]", result));
+                }
+            }
+        }
+    }
+
+    /**
+     * Redeploys code to all instances behind the {@linkplain CodeDeploymentConfiguration#getLoadBalancerName()}
+     * @param configuration the associated configuration
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void deployViaLoadBalancer(CodeDeploymentConfiguration configuration) throws IOException, InterruptedException {
         List<String> loadBalancerNames = new ArrayList<String>(1);
         loadBalancerNames.add(configuration.getLoadBalancerName());
         DescribeLoadBalancersRequest loadBalancersRequest = new DescribeLoadBalancersRequest(loadBalancerNames);
@@ -99,9 +136,6 @@ public class DeployCodeTask extends Task {
         }
         List<Instance> instances = loadBalancerDescription.getInstances();
         deploy(configuration, instances);
-        LOG.info("Done deploying to all instances.");
-        emailer.sendSuccessfulDeploymentMessage(configuration.getProjectName(), branchName, configuration.getEnvironment(),
-                configuration.getDeploymentEmail());
     }
 
     /**
@@ -124,7 +158,7 @@ public class DeployCodeTask extends Task {
             LOG.info("Removing instance [{}] from the load balancer ", instance.getInstanceId());
             removeFromLoadBalancer(configuration, instance);
             LOG.info("Invoking remote deployment on the  instance [{}]", instance.getInstanceId());
-            result = invokeScript(configuration.getCodeDeploymentScript(), instanceAddresses.get(instance.getInstanceId()));
+            result = invokeScript(configuration.getCodeDeploymentScript(), instanceAddresses.get(instance.getInstanceId()), configuration.getProjectName());
             if (result != 0) {
                 throw new RuntimeException(String.format("There was an error invoking the deployment script. Status code [%d]", result));
             }
@@ -184,11 +218,13 @@ public class DeployCodeTask extends Task {
         client.registerInstancesWithLoadBalancer(request);
     }
 
-    private int invokeScript(String scriptName, String arg) throws IOException, InterruptedException {
-        List<String> commands = new ArrayList<String>(2);
+    private int invokeScript(String scriptName, String ... args) throws IOException, InterruptedException {
+        List<String> commands = new ArrayList<String>(((args == null) || (args.length < 1) ? 2 : (1 + args.length)));
         commands.add(scriptName);
-        if (arg != null) {
-            commands.add(arg);
+        if (args != null) {
+            for (String arg : args) {
+                commands.add(arg);
+            }
         }
         String[] commandArr = commands.toArray(new String[commands.size()]);
         ProcessBuilder processBuilder = new ProcessBuilder(commandArr).redirectErrorStream(true);
