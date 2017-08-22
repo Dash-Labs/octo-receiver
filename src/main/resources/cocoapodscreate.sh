@@ -6,10 +6,11 @@ subspec_template=""
 
 repo=$1
 repo_cocoa=$2
-branch=$3
-tag=$4
-message=$5
-author=$6
+repo_name=$3
+branch=$4
+tag=$5
+message=$6
+author=$7
 
 checkStatus () {
  if [ "$STATUS" != "0" ]; then
@@ -44,7 +45,6 @@ iterateSubspecs() {
   done
 }
 
-repo_name="${repo##*/}"
 echo "Looking for cocoapod spec changes for repository $repo_name"
 
 if [ "$branch" != "" ]; then

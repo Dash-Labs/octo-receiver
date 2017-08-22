@@ -2,9 +2,11 @@
 
 repo=$1
 repo_objc=$2
-branch=$3
-tag=$4
-message=$5
+repo_name=$3
+branch=$4
+tag=$5
+message=$6
+author=$7
 
 cd $repo
 return_val=$?
