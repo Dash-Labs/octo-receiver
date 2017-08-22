@@ -48,7 +48,7 @@ repo_name="${repo##*/}"
 echo "Looking for cocoapod spec changes for repository $repo_name"
 
 if [ "$branch" != "" ]; then
-  echo "Non-tag push, ignoring cocoapod spec changes for repository $repo_name"
+  echo "Non-tag push, ignoring cocoapod spec changes for repository $repo_name in branch $branch"
   exit $STATUS
 fi
 

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class GitHubRepo {
 
     @JsonProperty("created_at")
-    private final Long createdAt;
+    private final String createdAt;
 
     private final String description;
 
@@ -47,7 +47,7 @@ public class GitHubRepo {
     private final Boolean repoPrivate;
 
     @JsonProperty("pushed_at")
-    private final Long pushedAt;
+    private final String pushedAt;
 
     private final Long size;
 
@@ -61,9 +61,9 @@ public class GitHubRepo {
         this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
-    public GitHubRepo(Long createdAt, String description, Boolean fork, Integer forks, Boolean hasDownloads, Boolean hasIssues,
+    public GitHubRepo(String createdAt, String description, Boolean fork, Integer forks, Boolean hasDownloads, Boolean hasIssues,
                       Boolean hasWiki, String homepage, String id, String language, String masterBranch, String name,
-                      Integer openIssues, GitHubUser owner, Boolean repoPrivate, Long pushedAt, Long size, Integer stargazers,
+                      Integer openIssues, GitHubUser owner, Boolean repoPrivate, String pushedAt, Long size, Integer stargazers,
                       String url, Integer watchers) {
         this.createdAt = createdAt;
         this.description = description;
@@ -87,7 +87,7 @@ public class GitHubRepo {
         this.watchers = watchers;
     }
 
-    public Long getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
@@ -147,7 +147,7 @@ public class GitHubRepo {
         return repoPrivate;
     }
 
-    public Long getPushedAt() {
+    public String getPushedAt() {
         return pushedAt;
     }
 
