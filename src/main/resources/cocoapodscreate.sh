@@ -28,13 +28,11 @@ iterateSubspecs() {
       local fileCount=`find $f/ -maxdepth 1 -type f -name '*.*' | wc -l | sed 's/^ *//g'`
       local specIncr=""
       local indentIncr=""
-      if [[ "$fileCount" != "0" ]]; then
-        specIncr="s"
-        indentIncr="  "
-        subspec_template="$subspec_template$indent${spec}s.subspec '$f' do |${spec}ss|$NEWLINE"
-        subspec_template="$subspec_template$indent  ${spec}ss.source_files = 'src/$directory$f/*.{h,m}'$NEWLINE"
-        subspec_template="$subspec_template$indent  ${spec}ss.header_dir = '$directory$f'$NEWLINE"
-      fi
+      specIncr="s"
+      indentIncr="  "
+      subspec_template="$subspec_template$indent${spec}s.subspec '$f' do |${spec}ss|$NEWLINE"
+      subspec_template="$subspec_template$indent  ${spec}ss.source_files = 'src/$directory$f/*.{h,m}'$NEWLINE"
+      subspec_template="$subspec_template$indent  ${spec}ss.header_dir = '$directory$f'$NEWLINE"
       cd $f
       iterateSubspecs "$indent$indentIncr" "$spec$specIncr" "$directory$f/"
       cd ..
