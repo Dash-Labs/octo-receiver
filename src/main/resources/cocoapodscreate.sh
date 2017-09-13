@@ -36,9 +36,7 @@ iterateSubspecs() {
       cd $f
       iterateSubspecs "$indent$indentIncr" "$spec$specIncr" "$directory$f/"
       cd ..
-      if [[ "$fileCount" != "0" ]]; then
-        subspec_template="$subspec_template${indent}end$NEWLINE"
-      fi
+      subspec_template="$subspec_template${indent}end$NEWLINE"
     fi
   done
 }
